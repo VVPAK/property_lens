@@ -13,6 +13,8 @@ Maximize product ROI by reducing user cognitive load and eliminating friction po
 2. **Clarity**: Eliminate technical jargon (unless it's a dev-tool). Terminology must be consistent across the entire product.
 3. **Action-Oriented**: Every text element must answer "What do I do next?" or "What just happened?".
 4. **Hierarchy**: Crucial info in the header. Context in the subheader. Expected result in the CTA.
+5. **Dubai Market Context**: Use Simplified English. Many users are non-native speakers—avoid idioms and complex words.
+6. **Punctuation**: Do NOT use periods at the end of UI strings, headers, or buttons.
 
 ## Interface Analysis Protocol
 1. **Context Audit**: Where is the user? (Screen, system state, previous action).
@@ -46,3 +48,5 @@ When asked to "write app text," "fix a button," or "perform UX editing":
 1. Apply this skill to analyze the provided UI/flow.
 2. Provide 2-3 variants (Concise, Standard, Direct) with rationale based on cognitive load.
 3. Validate text against technical constraints (character limits, container size).
+4. **Final Check**: Ensure no trailing periods and use simple vocabulary.
+
