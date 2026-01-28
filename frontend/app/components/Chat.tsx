@@ -57,7 +57,7 @@ export default function Chat() {
         setIsLoading(true);
 
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/chat`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/api/v1/chat`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ message: userMessage.content }),
@@ -67,9 +67,31 @@ export default function Chat() {
                 throw new Error(await res.text() || "Failed to fetch response");
             }
 
-            const data = await res.json();
-            const aiMessage: Message = { role: "assistant", content: data.response };
-            setMessages((prev) => [...prev, aiMessage]);
+            if (!res.body) throw new Error("No response body");
+
+            const reader = res.body.getReader();
+            const decoder = new TextDecoder();
+            let done = false;
+            let aiContent = "";
+
+            // Add placeholder message
+            setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
+
+            while (!done) {
+                const { value, done: doneReading } = await reader.read();
+                done = doneReading;
+                const chunkValue = decoder.decode(value, { stream: !done });
+                aiContent += chunkValue;
+
+                setMessages((prev) => {
+                    const newMessages = [...prev];
+                    const lastMsg = newMessages[newMessages.length - 1];
+                    if (lastMsg.role === "assistant") {
+                        lastMsg.content = aiContent;
+                    }
+                    return newMessages;
+                });
+            }
         } catch (error) {
             setMessages((prev) => [
                 ...prev,
@@ -135,19 +157,6 @@ export default function Chat() {
                                 </div>
                             </div>
                         ))}
-                        {isLoading && (
-                            <div className={styles.messageRow}>
-                                <div className={clsx(styles.avatar, styles.aiAvatar)}>
-                                    <Bot size={18} />
-                                </div>
-                                <div className={styles.bubble}>
-                                    <div className="flex items-center gap-2 text-gray-500">
-                                        <Loader2 className="animate-spin w-4 h-4" />
-                                        <span className="text-sm">Analyzing...</span>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
                         <div ref={messagesEndRef} />
                     </>
                 )}

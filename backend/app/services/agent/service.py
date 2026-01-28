@@ -8,7 +8,7 @@ class AgentService:
     def __init__(self):
         self.llm = ChatOpenAI(
             api_key=settings.OPENAI_API_KEY,
-            model="gpt-4o",
+            model="gpt-4o-mini",
             temperature=0
         )
         self.tools = [SearchPropertiesTool(), ROICalculatorTool()]
@@ -18,15 +18,27 @@ class AgentService:
 
     async def chat(self, user_input: str):
         """
-        Run the agent with the user input.
+        Run the agent with the user input (Standard).
         """
-        # LangGraph agents expect a list of messages
         inputs = {"messages": [HumanMessage(content=user_input)]}
-        
-        # Invoke the graph
         response = await self.agent.ainvoke(inputs)
-        
-        # The last message in the state is the AI's final response
         return response["messages"][-1].content
+
+    async def chat_stream(self, message: str):
+        """
+        Process a message and yield chunks (Streaming).
+        """
+        try:
+            # astream_events allows us to see intermediate steps if needed.
+            inputs = {"messages": [HumanMessage(content=message)]}
+            async for event in self.agent.astream_events(inputs, version="v1"):
+                kind = event["event"]
+                # Stream content from the final LLM response (on_chat_model_stream)
+                if kind == "on_chat_model_stream" and "chunk" in event["data"]:
+                    content = event["data"]["chunk"].content
+                    if content:
+                        yield content
+        except Exception as e:
+            yield f"Error: {str(e)}"
 
 agent_service = AgentService()
