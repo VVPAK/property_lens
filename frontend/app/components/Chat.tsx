@@ -169,6 +169,7 @@ export default function Chat() {
                         onClick={() => handleSend(input)}
                         disabled={isLoading || !input.trim()}
                         className={styles.sendButton}
+                        aria-label="Send message"
                     >
                         {isLoading ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} />}
                     </button>
